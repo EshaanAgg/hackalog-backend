@@ -72,13 +72,13 @@ REST_FRAMEWORK = {
 
 
 SWAGGER_SETTINGS = {
-   'SECURITY_DEFINITIONS': {
-      'Token': {
+    'SECURITY_DEFINITIONS': {
+        'Token': {
             'type': 'apiKey',
             'name': 'Authorization',
             'in': 'header'
-      }
-   }
+        }
+    }
 }
 
 TEMPLATES = [
@@ -102,14 +102,16 @@ WSGI_APPLICATION = 'hackalog.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'neondb',
+        'USER': 'EshaanAgg',
+        'PASSWORD': 'tnl2WZcI0gbC',
+        'HOST': 'us-east-2.aws.neon.tech',
+        'PORT': '5432',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -164,5 +166,6 @@ with open('firebase_admin.aes', 'rb') as encrypted_file:
             int(os.environ.get('FIREBASE_DECRYPT_SIZE'))
         )
 
-credentials = firebase_admin.credentials.Certificate(os.path.join(BASE_DIR, 'firebase_admin.json'))
+credentials = firebase_admin.credentials.Certificate(
+    os.path.join(BASE_DIR, 'firebase_admin.json'))
 firebase_admin.initialize_app(credentials)
