@@ -108,10 +108,11 @@ DATABASES = {
         'NAME': 'neondb',
         'USER': 'EshaanAgg',
         'PASSWORD': 'tnl2WZcI0gbC',
-        'HOST': 'us-east-2.aws.neon.tech',
+        'HOST': 'ep-damp-mode-975827.us-east-2.aws.neon.tech',
         'PORT': '5432',
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
