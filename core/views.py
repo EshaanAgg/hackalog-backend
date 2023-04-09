@@ -24,10 +24,11 @@ from .permissions import (
 )
 
 query_param = openapi.Parameter(
-    'user_specific', openapi.IN_QUERY, 
+    'user_specific', openapi.IN_QUERY,
     description="Query parameter - Returns all teams of hackathons if user_specific value is not specified.\nTo get team of a user pass user_specific=[y, Y, True]",
     type=openapi.TYPE_STRING, enum=['y', 'Y', 'True']
 )
+
 
 @method_decorator(name="get", decorator=swagger_auto_schema(manual_parameters=[query_param]))
 class HackathonTeamView(generics.ListCreateAPIView):
@@ -37,6 +38,7 @@ class HackathonTeamView(generics.ListCreateAPIView):
     post:
     Creates a new team in a hackathon and return the team_id
     """
+
     def get_permissions(self):
         user_specific = self.request.query_params.get('user_specific', None)
         if self.request.method == "GET":
@@ -68,9 +70,11 @@ class HackathonTeamView(generics.ListCreateAPIView):
         except Hackathon.DoesNotExist:
             raise exceptions.NotFound("Hackathon does not exist!")
         if user_specific in ['y', 'Y', 'True']:
-            queryset = Team.objects.filter(hackathon=hackathon, members=self.request.user).select_related('leader').prefetch_related('members')
+            queryset = Team.objects.filter(hackathon=hackathon, members=self.request.user).select_related(
+                'leader').prefetch_related('members')
         else:
-            queryset = Team.objects.filter(hackathon=hackathon).select_related('leader').prefetch_related('members')
+            queryset = Team.objects.filter(hackathon=hackathon).select_related(
+                'leader').prefetch_related('members')
         return queryset
 
     def post(self, request, **kwargs):
@@ -88,6 +92,7 @@ class JoinTeamView(generics.GenericAPIView):
     """
     serializer_class = JoinTeamSerializer
     permission_classes = [permissions.IsAuthenticated, AllowCompleteProfile]
+
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
             return None
@@ -132,13 +137,13 @@ class HackathonListCreateView(generics.ListCreateAPIView):
         query = self.request.query_params.get('query', None)
         current_date = timezone.now()
         if query is not None:
-            if(query == 'ongoing'):
+            if (query == 'ongoing'):
                 queryset = Hackathon.objects.filter(
                     start__lt=current_date, end__gt=current_date)
-            elif(query == 'completed'):
+            elif (query == 'completed'):
                 queryset = Hackathon.objects.filter(
                     start__lt=current_date, end__lt=current_date)
-            elif(query == 'upcoming'):
+            elif (query == 'upcoming'):
                 queryset = Hackathon.objects.filter(
                     start__gt=current_date, end__gt=current_date)
             else:
@@ -191,13 +196,15 @@ class HackathonSubmissionView(generics.ListCreateAPIView):
                         return Submission.objects.filter(hackathon=hackathon)
                     else:
                         try:
-                            team = Team.objects.get(members=user, hackathon=hackathon)
+                            team = Team.objects.get(
+                                members=user, hackathon=hackathon)
                         except Team.DoesNotExist:
                             raise exceptions.NotFound("Team does not exists!")
                         else:
                             return Submission.objects.filter(hackathon=hackathon, team=team)
                 else:
-                    raise exceptions.NotAuthenticated(detail="Authentication is required to get submissions of ongoing hackathon!")
+                    raise exceptions.NotAuthenticated(
+                        detail="Authentication is required to get submissions of ongoing hackathon!")
             else:
                 return Submission.objects.filter(hackathon=hackathon)
 
@@ -219,7 +226,7 @@ class HackathonSubmissionView(generics.ListCreateAPIView):
                 return Response("A Submission Already Exists!", status=status.HTTP_400_BAD_REQUEST)
             # As we are using id as pk for hackathon, and slug for routing
             # so due to foreign key constraints we need to change request data to contain hackathon pk.
-            #Similar reason for team.
+            # Similar reason for team.
             request.data['hackathon'] = hackathon.pk
             request.data['team'] = team.pk
 
@@ -249,8 +256,10 @@ class TeamView(generics.RetrieveUpdateDestroyAPIView):
             return [permissions.IsAuthenticated(), IsLeaderOrSuperUser()]
 
     serializer_class = TeamDetailSerializer
-    queryset = Team.objects.all().select_related('leader').prefetch_related('members')
+    queryset = Team.objects.all().select_related(
+        'leader').prefetch_related('members')
     lookup_field = 'team_id'
+
 
 class MemberExitView(generics.GenericAPIView):
     """
@@ -263,6 +272,7 @@ class MemberExitView(generics.GenericAPIView):
     queryset = Team.objects.all()
     lookup_field = 'team_id'
     permission_classes = [permissions.IsAuthenticated]
+
     def get_serializer_context(self):
         return {
             'request': self.request,
@@ -272,7 +282,8 @@ class MemberExitView(generics.GenericAPIView):
     def patch(self, request, **kwargs):
         serializer = self.get_serializer()
         serializer.exit_team()
-        return Response("Successfully removed from the team",status=status.HTTP_200_OK)
+        return Response("Successfully removed from the team", status=status.HTTP_200_OK)
+
 
 class SubmissionRUDView(generics.RetrieveUpdateDestroyAPIView):
     """
@@ -291,7 +302,8 @@ class SubmissionRUDView(generics.RetrieveUpdateDestroyAPIView):
         if getattr(self, 'swagger_fake_view', False):
             return None
 
-        queryset = Submission.objects.filter(id=self.kwargs['id']).select_related('team', 'hackathon')
+        queryset = Submission.objects.filter(
+            id=self.kwargs['id']).select_related('team', 'hackathon')
         user = self.request.user
         if queryset:
             hackathon = Hackathon.objects.get(id=queryset[0].hackathon_id)
@@ -300,19 +312,24 @@ class SubmissionRUDView(generics.RetrieveUpdateDestroyAPIView):
                     return queryset
                 elif self.request.method == 'DELETE' or self.request.method == 'PUT' or self.request.method == 'PATCH':
                     try:
-                        team = Team.objects.get(members=user, hackathon=hackathon)
+                        team = Team.objects.get(
+                            members=user, hackathon=hackathon)
                         return queryset
                     except Team.DoesNotExist:
-                        raise exceptions.PermissionDenied(detail="Not the member of registered Team")
+                        raise exceptions.PermissionDenied(
+                            detail="Not the member of registered Team")
             elif hackathon.status == 'Ongoing':
                 if not user:
-                    raise exceptions.PermissionDenied(detail="Must be Logged in to view ongoing submissions")
+                    raise exceptions.PermissionDenied(
+                        detail="Must be Logged in to view ongoing submissions")
                 try:
                     team = Team.objects.get(members=user, hackathon=hackathon)
                     return queryset
                 except Team.DoesNotExist:
-                    raise exceptions.PermissionDenied(detail="Not the member of registered Team")
+                    raise exceptions.PermissionDenied(
+                        detail="Not the member of registered Team")
             else:
-                raise exceptions.PermissionDenied(detail="Hackathon is not started yet")
+                raise exceptions.PermissionDenied(
+                    detail="Hackathon is not started yet")
         else:
             raise exceptions.NotFound("Submission does not exist!")

@@ -23,13 +23,12 @@ class Hackathon(models.Model):
     @property
     def status(self):
         current_date = timezone.now()
-        if self.start<=current_date and self.end<=current_date :
+        if self.start <= current_date and self.end <= current_date:
             return "Completed"
-        elif self.start<=current_date and self.end>=current_date :
+        elif self.start <= current_date and self.end >= current_date:
             return "Ongoing"
         else:
             return "Upcoming"
-
 
     def __str__(self):
         return self.title

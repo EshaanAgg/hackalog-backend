@@ -5,13 +5,14 @@ from .models import Hackathon, Team, Submission
 from authentication.models import User
 from authentication import serializers as auth_serializer
 
+
 class TeamSerializer(serializers.ModelSerializer):
     """
     This Serailizer serializes Team objects but it does not include members and details. 
     """
     hackathon = serializers.SerializerMethodField()
 
-    def get_hackathon(self,obj):
+    def get_hackathon(self, obj):
         serializer = HackathonSerializer(obj.hackathon)
         return serializer.data
 
@@ -19,6 +20,7 @@ class TeamSerializer(serializers.ModelSerializer):
         model = Team
         fields = ('id', 'name', 'hackathon', 'team_id')
         depth = 1
+
 
 class TeamDetailSerializer(TeamSerializer):
     """
@@ -34,9 +36,11 @@ class TeamDetailSerializer(TeamSerializer):
     def get_leader(self, obj):
         serializer = auth_serializer.ProfileSerializer(obj.leader)
         return serializer.data
+
     class Meta:
         model = Team
         fields = ('id', 'name', 'hackathon', 'team_id', 'members', 'leader')
+
 
 class TeamCreateSerializer(serializers.ModelSerializer):
 
@@ -53,13 +57,15 @@ class TeamCreateSerializer(serializers.ModelSerializer):
         except:
             pass
         else:
-            raise exceptions.ValidationError(detail="You are already part of a team in this hackathon.")
+            raise exceptions.ValidationError(
+                detail="You are already part of a team in this hackathon.")
         try:
             team = Team.objects.get(hackathon=hackathon, name=name)
         except:
             pass
         else:
-            raise exceptions.ValidationError(detail="Team with this name already exists in the Hackathon!")
+            raise exceptions.ValidationError(
+                detail="Team with this name already exists in the Hackathon!")
         return attrs
 
     def save(self):
@@ -69,13 +75,16 @@ class TeamCreateSerializer(serializers.ModelSerializer):
         members = [user]
         hackathon_slug = self.context['kwargs']['slug']
         hackathon = Hackathon.objects.get(slug=hackathon_slug)
-        team = Team.objects.create(name=data['name'], hackathon=hackathon, leader=leader, team_id=get_random_string(16))
+        team = Team.objects.create(
+            name=data['name'], hackathon=hackathon, leader=leader, team_id=get_random_string(16))
         team.members.set(members)
         team.save()
         return team
+
     class Meta:
         model = Team
         fields = ('name',)
+
 
 class JoinTeamSerializer(serializers.Serializer):
 
@@ -92,15 +101,18 @@ class JoinTeamSerializer(serializers.Serializer):
         user = self.context['request'].user
         if team.members.count() >= hackathon.max_team_size:
             raise exceptions.ValidationError(detail="Team is full!")
-        team_qs = Team.objects.filter(hackathon=hackathon, members= user)
+        team_qs = Team.objects.filter(hackathon=hackathon, members=user)
         if team_qs.exists():
             print('team_qs =', team_qs)
-            raise exceptions.ValidationError(detail="You are already part of some team in this hackathon.")
+            raise exceptions.ValidationError(
+                detail="You are already part of some team in this hackathon.")
         else:
             members = team.members
             if user in members.all():
-                raise exceptions.ValidationError(detail="You are already in the team!")
+                raise exceptions.ValidationError(
+                    detail="You are already in the team!")
             members.add(user)
+
 
 class HackathonSerializer(serializers.ModelSerializer):
     status = serializers.CharField()
@@ -123,6 +135,7 @@ class HackathonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hackathon
         fields = '__all__'
+
 
 class HackathonDetailSerializer(HackathonSerializer):
     userStatus = serializers.SerializerMethodField('get_userStatus')
@@ -150,16 +163,16 @@ class HackathonDetailSerializer(HackathonSerializer):
 
 class SubmissionsSerializer(serializers.ModelSerializer):
     teamName = serializers.SerializerMethodField('get_teamName')
-    
+
     def get_teamName(self, obj):
         '''
         Serializer Field to show team name 
         without the need of full team details
         '''
         try:
-            team = Team.objects.get(pk = obj.team_id)
+            team = Team.objects.get(pk=obj.team_id)
         except Team.DoesNotExist:
-            raise exceptions.ValidationError(detail='Team does not exists.') 
+            raise exceptions.ValidationError(detail='Team does not exists.')
         return team.name
 
     class Meta:
@@ -170,21 +183,25 @@ class SubmissionsSerializer(serializers.ModelSerializer):
         if score < 0:
             raise serializers.ValidationError("Score can't be less than 0")
         return score
-        
+
+
 class MemberExitSerializer(serializers.Serializer):
 
     def exit_team(self):
         team_id = self.context['kwargs']['team_id']
         try:
-            team = Team.objects.select_related('hackathon', 'leader').get(team_id=team_id)
+            team = Team.objects.select_related(
+                'hackathon', 'leader').get(team_id=team_id)
         except Team.DoesNotExist:
             raise exceptions.ValidationError(detail='Team does not exists.')
         user = self.context['request'].user  # requesting user
-        username = self.context['kwargs']['username'] # username to be removed from team
+        # username to be removed from team
+        username = self.context['kwargs']['username']
         if (team.leader.username != username) and (user == team.leader or user.username == username):
             hackathon = team.hackathon
             if hackathon.start < timezone.now():
-                raise exceptions.ValidationError(detail='Cannot leave/exit team as event started.')
+                raise exceptions.ValidationError(
+                    detail='Cannot leave/exit team as event started.')
             try:
                 member = User.objects.get(username=username)
             except User.DoesNotExist:
@@ -195,13 +212,15 @@ class MemberExitSerializer(serializers.Serializer):
             members.remove(member)
             team.save()
         else:
-            raise exceptions.PermissionDenied('You are not allowed to perform this operation.')
+            raise exceptions.PermissionDenied(
+                'You are not allowed to perform this operation.')
 
-class SubmissionRUDSerializer(serializers.ModelSerializer): 
+
+class SubmissionRUDSerializer(serializers.ModelSerializer):
     hackathon = serializers.SerializerMethodField()
     team = serializers.SerializerMethodField()
 
-    def get_hackathon(self,obj):
+    def get_hackathon(self, obj):
         serializer = HackathonSerializer(obj.hackathon)
         return serializer.data
 
@@ -211,5 +230,6 @@ class SubmissionRUDSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Submission
-        fields = ('title', 'team', 'review', 'hackathon', 'submission_url', 'score', 'description')
+        fields = ('title', 'team', 'review', 'hackathon',
+                  'submission_url', 'score', 'description')
         read_only_fields = ['score']
