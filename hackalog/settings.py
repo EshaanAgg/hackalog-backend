@@ -10,7 +10,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
-import django_heroku
 import firebase_admin
 import os
 import pyAesCrypt
@@ -153,8 +152,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 CORS_ALLOW_ALL_ORIGINS = True
-# Activate Django-Heroku.
-django_heroku.settings(locals())
 
 # Firebase Credentials
 with open('firebase_admin.aes', 'rb') as encrypted_file:
