@@ -152,7 +152,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 CORS_ALLOW_ALL_ORIGINS = True
-CSRF_TRUSTED_ORIGINS = ['http://*', 'https://*']
 
 # Firebase Credentials
 with open('firebase_admin.aes', 'rb') as encrypted_file:
