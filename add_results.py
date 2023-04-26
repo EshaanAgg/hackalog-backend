@@ -5,11 +5,11 @@ import psycopg2
 df = pd.read_excel('Results.xlsx')
 
 # Connect to the relevant database
-connection = psycopg2.connect(user="EshaanAgg",
-                              password="tnl2WZcI0gbC",
-                              host="ep-damp-mode-975827.us-east-2.aws.neon.tech",
-                              port="5432",
-                              database="neondb")
+connection = psycopg2.connect(user="railway",
+                              password="mPkLyxX3TD9Lbst3u0WH",
+                              host="containers-us-west-136.railway.app",
+                              port="7881",
+                              database="postgres")
 cursor = connection.cursor()
 
 # Updates a single record

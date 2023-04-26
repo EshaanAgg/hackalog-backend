@@ -102,11 +102,11 @@ WSGI_APPLICATION = 'hackalog.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'neondb',
-        'USER': 'EshaanAgg',
-        'PASSWORD': 'tnl2WZcI0gbC',
-        'HOST': 'ep-damp-mode-975827.us-east-2.aws.neon.tech',
-        'PORT': '5432',
+        'NAME': 'railway',
+        'USER': 'postgres',
+        'PASSWORD': 'mPkLyxX3TD9Lbst3u0WH',
+        'HOST': 'containers-us-west-136.railway.app',
+        'PORT': '7881',
     }
 }
 
